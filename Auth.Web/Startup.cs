@@ -2,6 +2,7 @@
 using IdentityServer4.Quickstart.UI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,22 +20,39 @@ namespace Auth.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // TODO: put in config file
+            const string connectionString = @"Data Source=.\sqlexpress;database=AuthServerDB;trusted_connection=yes;";
+
             services.AddMvc();
 
-            // configure identity server
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                .AddInMemoryPersistedGrants()
-                .AddInMemoryIdentityResources(TempClientsConfig.GetIdentityResources())
-                .AddInMemoryApiResources(TempClientsConfig.GetApiResources())
-                .AddInMemoryClients(TempClientsConfig.GetClients())
-                .AddTestUsers(TempClientsConfig.GetUsers());
-                //.AddAspNetIdentity<ApplicationUser>();
+                .AddTestUsers(TempClientsConfig.GetUsers())
+                // this adds the config data from DB (clients, resources)
+                .AddConfigurationStore(options =>
+                {
+                    options.ConfigureDbContext = builder =>
+                        builder.UseSqlServer(connectionString);
+                })
+                // this adds the operational data from DB (codes, tokens, consents)
+                .AddOperationalStore(options =>
+                {
+                    options.ConfigureDbContext = builder =>
+                        builder.UseSqlServer(connectionString);
+
+                    // this enables automatic token cleanup. this is optional.
+                    options.EnableTokenCleanup = true;
+                    options.TokenCleanupInterval = 30;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // Once and done
+            // Put seed data in database project
+            // PersistenceHelper.InitializeDatabase(app);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
