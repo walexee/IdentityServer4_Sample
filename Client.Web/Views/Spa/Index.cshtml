@@ -1,0 +1,74 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+@section Scripts
+{
+<script src="~/js/oidc-client.min.js"></script>
+<script>
+    $(function () {
+        var signInBtn = document.getElementById("sign-id-btn");
+        var signOutBtn = document.getElementById("sign-out-btn");
+        var callApiBtn = document.getElementById("call-api-btn");
+
+        var config = {
+            authority: "https://localhost:44344",
+            client_id: "Spa",
+            scope: "openid profile userApi",
+            response_type: "id_token token",
+            popup_redirect_uri: "https://localhost:44303/SignInCallback.html",
+            popup_post_logout_redirect_uri: "https://localhost:44303/SignOutCallback.html",
+            loadUserInfo: true
+        };
+
+        var user;
+
+
+        signInBtn.onclick = function () {
+            console.log('sign in button clicked.');
+            var mgr = new Oidc.UserManager(config);
+
+            mgr.signinPopup().then(function (x) {
+                user = x;
+                refreshButtons();
+            });
+        };
+
+        signOutBtn.onclick = function () {
+
+
+        };
+
+        callApiBtn.onclick = function () {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://localhost:44377/api/users");
+            if (user) {
+                xhr.setRequestHeader("Authorization", "Bearer " + user.access_token);
+            }
+            xhr.onload = function () {
+                if (xhr.status !== 200) {
+                    alert("Error");
+                } else {
+                    alert(xhr.responseText);
+                }
+            }
+            xhr.send();
+        };
+
+        function refreshButtons() {
+            signInBtn.className = user ? 'hidden' : 'visible';
+            signOutBtn.className = user ? 'visible' : 'hidden';
+        }
+    });
+</script>
+}
+
+<div class="jumbotron">SPA</div>
+
+<ul>
+    <li><button id="sign-id-btn">Sign In With SPA</button></li>
+    <li><button id="sign-out-btn" class="hidden">Sign Out With SPA</button></li>
+    <li><button id="call-api-btn">Call API</button></li>
+</ul>
+
