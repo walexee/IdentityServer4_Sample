@@ -1,5 +1,7 @@
-﻿using Auth.Web.Temp;
+﻿using Auth.Web.IDSv4;
 using IdentityServer4.Quickstart.UI;
+using IdentityServer4.Services;
+using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +29,7 @@ namespace Auth.Web
 
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
-                .AddTestUsers(TempClientsConfig.GetUsers())
+                //.AddTestUsers(TempClientsConfig.GetUsers())
                 // this adds the config data from DB (clients, resources)
                 .AddConfigurationStore(options =>
                 {
@@ -43,7 +45,13 @@ namespace Auth.Web
                     // this enables automatic token cleanup. this is optional.
                     options.EnableTokenCleanup = true;
                     options.TokenCleanupInterval = 30;
-                });
+                })
+                .AddProfileService<UserProfileService>()
+                .AddResourceOwnerValidator<UserPasswordValidator>();
+
+
+            services.AddTransient<IResourceOwnerPasswordValidator, UserPasswordValidator>();
+            services.AddTransient<IProfileService, UserProfileService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 
-namespace Auth.Web.Temp
+namespace Auth.Web.IDSv4
 {
     public static class SeedDataHelper
     {

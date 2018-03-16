@@ -4,7 +4,7 @@ using IdentityServer4.Test;
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Auth.Web.Temp
+namespace Auth.Web.IDSv4
 {
     public class TempClientsConfig
     {
